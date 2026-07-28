@@ -89,7 +89,7 @@ export default function NewsletterView({
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       {/* 工具栏 */}
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -126,34 +126,47 @@ export default function NewsletterView({
                 {section.label}
                 <span className="ml-2 text-xs font-normal text-neutral-400">{items.length}</span>
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {items.map((article) => (
-                  <div key={article.id} className="group flex items-start gap-2 rounded-lg px-2 py-1.5 transition hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                    <a
-                      href={article.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="min-w-0 flex-1 text-sm text-neutral-700 hover:text-neutral-900 hover:underline dark:text-neutral-300 dark:hover:text-neutral-100"
-                    >
-                      {article.title}
-                    </a>
-                    <select
-                      value={taggedSections[article.id]}
-                      onChange={(e) => onSectionChange(article.id, e.target.value as NewsletterSectionId)}
-                      className="shrink-0 rounded border border-neutral-200 bg-transparent px-1 py-0.5 text-xs text-neutral-400 outline-none opacity-0 transition group-hover:opacity-100 dark:border-neutral-700"
-                    >
-                      {NEWSLETTER_SECTIONS.map((s) => (
-                        <option key={s.id} value={s.id}>{s.label}</option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => onRemove(article.id)}
-                      className="shrink-0 text-neutral-300 opacity-0 transition hover:text-red-500 group-hover:opacity-100"
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                  <div key={article.id} className="group flex items-start gap-2 rounded-lg px-2 py-2 transition hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                    <span className="mt-0.5 shrink-0 text-xs text-neutral-300 dark:text-neutral-600">•</span>
+                    <div className="min-w-0 flex-1">
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block break-words text-sm text-neutral-700 hover:text-neutral-900 hover:underline dark:text-neutral-300 dark:hover:text-neutral-100"
+                      >
+                        {article.title}
+                      </a>
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-0.5 block break-all text-xs text-neutral-400 hover:underline dark:text-neutral-500"
+                      >
+                        {article.url}
+                      </a>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1 md:opacity-0 md:transition md:group-hover:opacity-100">
+                      <select
+                        value={taggedSections[article.id]}
+                        onChange={(e) => onSectionChange(article.id, e.target.value as NewsletterSectionId)}
+                        className="rounded border border-neutral-200 bg-transparent px-1 py-0.5 text-xs text-neutral-400 outline-none dark:border-neutral-700 dark:bg-neutral-900"
+                      >
+                        {NEWSLETTER_SECTIONS.map((s) => (
+                          <option key={s.id} value={s.id}>{s.label}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => onRemove(article.id)}
+                        className="text-neutral-300 transition hover:text-red-500 dark:text-neutral-600"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
