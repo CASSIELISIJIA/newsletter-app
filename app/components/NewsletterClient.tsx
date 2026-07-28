@@ -198,7 +198,7 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
           onClear={() => setTaggedSections({})}
         />
       ) : (
-      <div className="flex gap-6 md:gap-8">
+      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
         {/* ---- 侧边栏 ---- */}
         <aside className={`${showFilters ? "block" : "hidden"} w-full md:block md:w-56 md:shrink-0 lg:w-64`}>
           <div className="space-y-5">
