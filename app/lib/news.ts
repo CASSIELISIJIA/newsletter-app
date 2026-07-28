@@ -5,20 +5,31 @@ import type { NewsArticle } from "./types";
 // ============================================================
 //  数据获取层 (Data Layer)
 //  ----------------------------------------------------------
-//  优先从 RSS Feed 获取实时新闻（Google News 聚合 + Doha News 直连）。
-//  若 RSS 不可用（如本地开发网络受限），自动回退到 Mock 数据。
-//  部署到 Vercel 等平台后 RSS 将正常工作。
+//  生产环境：从 RSS Feed 获取实时新闻
+//  开发环境：直接使用 Mock 数据（避免 RSS 超时等待）
+//  部署到 Vercel 后 RSS 将正常工作。
 // ============================================================
+
+function sortArticles(articles: NewsArticle[]): NewsArticle[] {
+  return [...articles].sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
+}
 
 export async function getNews(): Promise<{
   articles: NewsArticle[];
   source: "rss" | "mock";
 }> {
+  // 开发环境直接返回 Mock 数据，避免等待 RSS 超时
+  if (process.env.NODE_ENV === "development") {
+    return { articles: sortArticles(MOCK_ARTICLES), source: "mock" };
+  }
+
+  // 生产环境尝试 RSS
   try {
     const rssOk = await isRssAvailable();
     if (rssOk) {
       const articles = await fetchAllFeeds();
-      // 文章数过少说明大部分 Google News feed 超时失败，回退 Mock
       if (articles.length >= 15) {
         return { articles, source: "rss" };
       }
@@ -27,13 +38,5 @@ export async function getNews(): Promise<{
     console.error("[News] RSS fetch failed, falling back to mock:", error);
   }
 
-  // 回退到 Mock 数据
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  return {
-    articles: [...MOCK_ARTICLES].sort(
-      (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    ),
-    source: "mock",
-  };
+  return { articles: sortArticles(MOCK_ARTICLES), source: "mock" };
 }

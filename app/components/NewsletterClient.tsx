@@ -6,16 +6,12 @@ import {
   NEWS_CATEGORIES,
   getCategoryLabel,
   getEntityName,
-  getSourceHomepage,
 } from "@/app/lib/preferences";
 import { formatFullDate, formatRelativeTime } from "@/app/lib/utils";
 
 type TimeRange = "1h" | "6h" | "12h" | "24h" | "3days" | "week" | "month" | "all" | "custom";
 
 const TIME_RANGE_OPTIONS: { id: TimeRange; label: string }[] = [
-  { id: "1h", label: "1小时" },
-  { id: "6h", label: "6小时" },
-  { id: "12h", label: "12小时" },
   { id: "24h", label: "24小时" },
   { id: "3days", label: "3天" },
   { id: "week", label: "一周" },
@@ -40,6 +36,7 @@ interface NewsletterClientProps {
 }
 
 export default function NewsletterClient({ articles, now }: NewsletterClientProps) {
+  const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState<NewsCategoryId | "all">("all");
   const [activeSource, setActiveSource] = useState<string>("all");
   const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>("all");
@@ -52,7 +49,6 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
     return articles.filter((article) => {
       const articleTime = new Date(article.publishedAt).getTime();
 
-      // 时间范围筛选
       if (activeTimeRange === "custom") {
         if (customStart && articleTime < new Date(customStart).getTime()) return false;
         if (customEnd && articleTime > new Date(customEnd).getTime()) return false;
@@ -80,149 +76,180 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
     return counts;
   }, [articles]);
 
-  const sourceIdsInUse = useMemo(() => {
-    return Array.from(new Set(articles.map((a) => a.sourceId)));
-  }, [articles]);
-
+  const sourceIdsInUse = useMemo(() => Array.from(new Set(articles.map((a) => a.sourceId))), [articles]);
   const aiibCount = articles.filter((a) => a.entityIds.includes("aiib")).length;
 
+  const activeFilterCount =
+    (activeCategory !== "all" ? 1 : 0) +
+    (activeSource !== "all" ? 1 : 0) +
+    (activeTimeRange !== "all" ? 1 : 0) +
+    (aiibOnly ? 1 : 0);
+
   const timeLabel = activeTimeRange === "custom"
-    ? `${customStart || "不限"} ~ ${customEnd || "不限"}`
+    ? `${customStart ? customStart.replace("T", " ") : "不限"} ~ ${customEnd ? customEnd.replace("T", " ") : "不限"}`
     : TIME_RANGE_OPTIONS.find((t) => t.id === activeTimeRange)?.label ?? "全部";
 
+  const resetAll = () => {
+    setActiveCategory("all");
+    setActiveSource("all");
+    setActiveTimeRange("all");
+    setCustomStart("");
+    setCustomEnd("");
+    setAiibOnly(false);
+    setSearchQuery("");
+  };
+
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:flex-row md:px-6">
-      {/* ---- 侧边栏 ---- */}
-      <aside className="md:w-64 md:shrink-0">
-        <div className="space-y-6 md:sticky md:top-24">
-          {/* 时间范围 */}
-          <FilterSection title="时间范围">
-            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-2">
-              {TIME_RANGE_OPTIONS.map((opt) => (
+    <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+      {/* 搜索栏 + 移动端筛选按钮 */}
+      <div className="mb-4 flex gap-2">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="搜索新闻标题、摘要或地区…"
+          className="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
+        />
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 md:hidden"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M6 12h12M10 20h4" />
+          </svg>
+          筛选
+          {activeFilterCount > 0 && (
+            <span className="rounded-full bg-neutral-900 px-1.5 text-xs text-white dark:bg-neutral-100 dark:text-neutral-900">{activeFilterCount}</span>
+          )}
+        </button>
+      </div>
+
+      <div className="flex gap-6 md:gap-8">
+        {/* ---- 侧边栏 ---- */}
+        <aside className={`${showFilters ? "block" : "hidden"} w-full md:block md:w-56 md:shrink-0 lg:w-64`}>
+          <div className="space-y-5">
+            {activeFilterCount > 0 && (
+              <button onClick={resetAll} className="text-xs text-neutral-400 transition hover:text-neutral-600 dark:hover:text-neutral-300">
+                ↺ 清除所有筛选
+              </button>
+            )}
+
+            {/* 时间范围 */}
+            <FilterSection title="时间范围">
+              <div className="flex flex-wrap gap-1.5">
+                {TIME_RANGE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setActiveTimeRange(opt.id)}
+                    className={`rounded-lg px-3 py-1.5 text-xs transition ${
+                      activeTimeRange === opt.id
+                        ? "bg-neutral-900 font-medium text-white dark:bg-neutral-100 dark:text-neutral-900"
+                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {activeTimeRange === "custom" && (
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <label className="mb-1.5 block text-xs text-neutral-500 dark:text-neutral-400">起始时间</label>
+                    <input
+                      type="datetime-local"
+                      step={60}
+                      value={customStart}
+                      onChange={(e) => setCustomStart(e.target.value)}
+                      className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs text-neutral-500 dark:text-neutral-400">结束时间</label>
+                    <input
+                      type="datetime-local"
+                      step={60}
+                      value={customEnd}
+                      onChange={(e) => setCustomEnd(e.target.value)}
+                      className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
+                    />
+                  </div>
+                </div>
+              )}
+            </FilterSection>
+
+            {/* AIIB 专题 */}
+            {aiibCount > 0 && (
+              <FilterSection title="专题追踪">
                 <button
-                  key={opt.id}
-                  onClick={() => setActiveTimeRange(opt.id)}
-                  className={`rounded-lg px-2.5 py-2 text-xs transition ${
-                    activeTimeRange === opt.id
-                      ? "bg-neutral-900 font-medium text-white dark:bg-neutral-100 dark:text-neutral-900"
+                  onClick={() => setAiibOnly(!aiibOnly)}
+                  className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition ${
+                    aiibOnly
+                      ? "bg-blue-600 font-medium text-white"
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
                   }`}
                 >
-                  {opt.label}
+                  <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-[10px] font-bold text-white">A</span>
+                  AIIB 专题
+                  <span className="ml-auto text-xs opacity-70">{aiibCount}</span>
                 </button>
+              </FilterSection>
+            )}
+
+            {/* 分类 */}
+            <FilterSection title="编辑方向">
+              <FilterButton active={activeCategory === "all"} onClick={() => setActiveCategory("all")}>
+                全部<span className="ml-auto text-xs opacity-60">{articles.length}</span>
+              </FilterButton>
+              {NEWS_CATEGORIES.map((cat) => (
+                <FilterButton key={cat.id} active={activeCategory === cat.id} onClick={() => setActiveCategory(cat.id)}>
+                  {cat.label}<span className="ml-auto text-xs opacity-60">{categoryCounts[cat.id] ?? 0}</span>
+                </FilterButton>
+              ))}
+            </FilterSection>
+
+            {/* 来源 */}
+            <FilterSection title="媒体来源">
+              <FilterButton active={activeSource === "all"} onClick={() => setActiveSource("all")}>全部媒体</FilterButton>
+              {sourceIdsInUse.map((sid) => {
+                const sample = articles.find((a) => a.sourceId === sid);
+                return (
+                  <FilterButton key={sid} active={activeSource === sid} onClick={() => setActiveSource(sid)}>
+                    {sample?.sourceName ?? sid}
+                  </FilterButton>
+                );
+              })}
+            </FilterSection>
+          </div>
+        </aside>
+
+        {/* ---- 主内容区 ---- */}
+        <main className="min-w-0 flex-1">
+          <div className="mb-4">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              共 {filtered.length} 篇 · {timeLabel}
+              {activeCategory !== "all" && ` · ${getCategoryLabel(activeCategory)}`}
+              {aiibOnly && ` · AIIB 专题`}
+            </p>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-neutral-300 py-16 text-center dark:border-neutral-700">
+              <p className="text-neutral-500 dark:text-neutral-400">没有找到匹配的新闻</p>
+              {activeTimeRange !== "all" && (
+                <button onClick={() => setActiveTimeRange("all")} className="mt-2 text-sm text-blue-600 hover:underline dark:text-blue-400">
+                  试试更长的时间范围
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filtered.map((article) => (
+                <NewsCard key={article.id} article={article} />
               ))}
             </div>
-            {activeTimeRange === "custom" && (
-              <div className="mt-3 space-y-3">
-                <div>
-                  <label className="mb-1.5 block text-xs text-neutral-500 dark:text-neutral-400">起始时间</label>
-                  <input
-                    type="datetime-local"
-                    step={60}
-                    value={customStart}
-                    onChange={(e) => setCustomStart(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs text-neutral-500 dark:text-neutral-400">结束时间</label>
-                  <input
-                    type="datetime-local"
-                    step={60}
-                    value={customEnd}
-                    onChange={(e) => setCustomEnd(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
-                  />
-                </div>
-                {(customStart || customEnd) && (
-                  <button
-                    onClick={() => { setCustomStart(""); setCustomEnd(""); }}
-                    className="text-xs text-neutral-400 transition hover:text-neutral-600 dark:hover:text-neutral-300"
-                  >
-                    清除自定义时间
-                  </button>
-                )}
-              </div>
-            )}
-          </FilterSection>
-
-          {/* AIIB 专题 */}
-          {aiibCount > 0 && (
-            <FilterSection title="专题追踪">
-              <button
-                onClick={() => setAiibOnly(!aiibOnly)}
-                className={`flex items-center rounded-md px-3 py-1.5 text-left text-sm transition ${
-                  aiibOnly
-                    ? "bg-blue-600 font-medium text-white"
-                    : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                }`}
-              >
-                <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded border text-[10px] font-bold">A</span>
-                AIIB 专题
-                <span className="ml-auto text-xs opacity-70">{aiibCount}</span>
-              </button>
-            </FilterSection>
           )}
-
-          {/* 分类 */}
-          <FilterSection title="编辑方向">
-            <FilterButton active={activeCategory === "all"} onClick={() => setActiveCategory("all")}>
-              全部<span className="ml-auto text-xs opacity-60">{articles.length}</span>
-            </FilterButton>
-            {NEWS_CATEGORIES.map((cat) => (
-              <FilterButton key={cat.id} active={activeCategory === cat.id} onClick={() => setActiveCategory(cat.id)}>
-                {cat.label}<span className="ml-auto text-xs opacity-60">{categoryCounts[cat.id] ?? 0}</span>
-              </FilterButton>
-            ))}
-          </FilterSection>
-
-          {/* 来源 */}
-          <FilterSection title="媒体来源">
-            <FilterButton active={activeSource === "all"} onClick={() => setActiveSource("all")}>全部媒体</FilterButton>
-            {sourceIdsInUse.map((sid) => {
-              const sample = articles.find((a) => a.sourceId === sid);
-              return (
-                <FilterButton key={sid} active={activeSource === sid} onClick={() => setActiveSource(sid)}>
-                  {sample?.sourceName ?? sid}
-                </FilterButton>
-              );
-            })}
-          </FilterSection>
-        </div>
-      </aside>
-
-      {/* ---- 主内容区 ---- */}
-      <main className="min-w-0 flex-1">
-        <div className="mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索新闻标题、摘要或地区…"
-            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
-          />
-        </div>
-
-        <div className="mb-4">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            共 {filtered.length} 篇 · {timeLabel}
-            {activeCategory !== "all" && ` · ${getCategoryLabel(activeCategory)}`}
-            {aiibOnly && ` · AIIB 专题`}
-          </p>
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-neutral-300 py-16 text-center dark:border-neutral-700">
-            <p className="text-neutral-500 dark:text-neutral-400">没有找到匹配的新闻</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filtered.map((article) => (
-              <NewsCard key={article.id} article={article} />
-            ))}
-          </div>
-        )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
@@ -240,7 +267,7 @@ function FilterButton({ active, onClick, children }: { active: boolean; onClick:
   return (
     <button
       onClick={onClick}
-      className={`flex items-center rounded-md px-3 py-1.5 text-left text-sm transition ${
+      className={`flex items-center rounded-lg px-3 py-2 text-left text-sm transition ${
         active
           ? "bg-neutral-900 font-medium text-white dark:bg-neutral-100 dark:text-neutral-900"
           : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -257,7 +284,7 @@ function NewsCard({ article }: { article: NewsArticle }) {
 
   return (
     <article
-      className={`group rounded-xl border bg-white p-5 transition hover:shadow-sm dark:bg-neutral-900 ${
+      className={`group rounded-xl border bg-white p-4 transition hover:shadow-sm dark:bg-neutral-900 sm:p-5 ${
         hasAiib
           ? "border-blue-300 hover:border-blue-400 dark:border-blue-800 dark:hover:border-blue-700"
           : "border-neutral-200 hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700"
@@ -270,14 +297,14 @@ function NewsCard({ article }: { article: NewsArticle }) {
         {hasAiib && (
           <span className="inline-flex items-center rounded-full bg-blue-600 px-2 py-0.5 font-medium text-white">AIIB</span>
         )}
-        <a href={getSourceHomepage(article.sourceId)} target="_blank" rel="noopener noreferrer" className="font-medium text-neutral-600 hover:underline dark:text-neutral-300">
+        <span className="font-medium text-neutral-600 dark:text-neutral-300">
           {article.sourceName || article.sourceId}
-        </a>
-        <span className="text-neutral-300 dark:text-neutral-600">|</span>
+        </span>
+        <span className="text-neutral-300 dark:text-neutral-600">·</span>
         <span className="text-neutral-500 dark:text-neutral-400">{article.region}</span>
       </div>
 
-      <h2 className="mb-1.5 text-base font-semibold leading-snug">
+      <h2 className="mb-1.5 text-sm font-semibold leading-snug sm:text-base">
         <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-neutral-900 transition group-hover:text-neutral-600 dark:text-neutral-100 dark:group-hover:text-neutral-300">
           {article.title}
         </a>
