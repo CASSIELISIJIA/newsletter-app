@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { NewsArticle, NewsCategoryId } from "@/app/lib/types";
 import {
   NEWS_CATEGORIES,
@@ -8,6 +8,10 @@ import {
   getEntityName,
 } from "@/app/lib/preferences";
 import { formatFullDate, formatRelativeTime } from "@/app/lib/utils";
+import NewsletterView, {
+  getNewsletterSection,
+  type NewsletterSectionId,
+} from "@/app/components/NewsletterView";
 
 type TimeRange = "1h" | "6h" | "12h" | "24h" | "3days" | "week" | "month" | "all" | "custom";
 
@@ -44,6 +48,35 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
   const [customEnd, setCustomEnd] = useState("");
   const [aiibOnly, setAiibOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [view, setView] = useState<"news" | "newsletter">("news");
+  const [taggedSections, setTaggedSections] = useState<Record<string, NewsletterSectionId>>({});
+
+  // localStorage 持久化
+  useEffect(() => {
+    const saved = localStorage.getItem("tagged-sections");
+    if (saved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      try { setTaggedSections(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("tagged-sections", JSON.stringify(taggedSections));
+  }, [taggedSections]);
+
+  const toggleTag = (article: NewsArticle) => {
+    setTaggedSections((prev) => {
+      const next = { ...prev };
+      if (next[article.id]) {
+        delete next[article.id];
+      } else {
+        next[article.id] = getNewsletterSection(article);
+      }
+      return next;
+    });
+  };
+
+  const taggedCount = Object.keys(taggedSections).length;
 
   const filtered = useMemo(() => {
     return articles.filter((article) => {
@@ -101,29 +134,70 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
-      {/* 搜索栏 + 移动端筛选按钮 */}
+      {/* 搜索栏 + 视图切换 + 移动端筛选按钮 */}
       <div className="mb-4 flex gap-2">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="搜索新闻标题、摘要或地区…"
-          className="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
-        />
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 md:hidden"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M6 12h12M10 20h4" />
-          </svg>
-          筛选
-          {activeFilterCount > 0 && (
-            <span className="rounded-full bg-neutral-900 px-1.5 text-xs text-white dark:bg-neutral-100 dark:text-neutral-900">{activeFilterCount}</span>
-          )}
-        </button>
+        {view === "news" && (
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索新闻标题、摘要或地区…"
+            className="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-100 dark:focus:ring-neutral-100"
+          />
+        )}
+        {view === "news" && (
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 md:hidden"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M6 12h12M10 20h4" />
+            </svg>
+            筛选
+            {activeFilterCount > 0 && (
+              <span className="rounded-full bg-neutral-900 px-1.5 text-xs text-white dark:bg-neutral-100 dark:text-neutral-900">{activeFilterCount}</span>
+            )}
+          </button>
+        )}
+        {/* 视图切换 */}
+        <div className="flex shrink-0 rounded-lg border border-neutral-300 p-0.5 dark:border-neutral-700">
+          <button
+            onClick={() => setView("news")}
+            className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+              view === "news"
+                ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                : "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400"
+            }`}
+          >
+            新闻
+          </button>
+          <button
+            onClick={() => setView("newsletter")}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition ${
+              view === "newsletter"
+                ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                : "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400"
+            }`}
+          >
+            Newsletter
+            {taggedCount > 0 && (
+              <span className={`rounded-full px-1.5 text-xs ${
+                view === "newsletter" ? "bg-white/20" : "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+              }`}>{taggedCount}</span>
+            )}
+          </button>
+        </div>
       </div>
 
+      {view === "newsletter" ? (
+        <NewsletterView
+          articles={articles}
+          taggedSections={taggedSections}
+          onSectionChange={(id, section) => setTaggedSections((prev) => ({ ...prev, [id]: section }))}
+          onRemove={(id) => setTaggedSections((prev) => { const n = { ...prev }; delete n[id]; return n; })}
+          onClear={() => setTaggedSections({})}
+        />
+      ) : (
       <div className="flex gap-6 md:gap-8">
         {/* ---- 侧边栏 ---- */}
         <aside className={`${showFilters ? "block" : "hidden"} w-full md:block md:w-56 md:shrink-0 lg:w-64`}>
@@ -244,12 +318,13 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
           ) : (
             <div className="space-y-3">
               {filtered.map((article) => (
-                <NewsCard key={article.id} article={article} />
+                <NewsCard key={article.id} article={article} tagged={!!taggedSections[article.id]} onToggleTag={() => toggleTag(article)} />
               ))}
             </div>
           )}
         </main>
       </div>
+      )}
     </div>
   );
 }
@@ -278,7 +353,7 @@ function FilterButton({ active, onClick, children }: { active: boolean; onClick:
   );
 }
 
-function NewsCard({ article }: { article: NewsArticle }) {
+function NewsCard({ article, tagged, onToggleTag }: { article: NewsArticle; tagged: boolean; onToggleTag: () => void }) {
   const hasAiib = article.entityIds.includes("aiib");
   const otherEntities = article.entityIds.filter((id) => id !== "aiib");
   const [copied, setCopied] = useState(false);
@@ -349,6 +424,17 @@ function NewsCard({ article }: { article: NewsArticle }) {
           {formatRelativeTime(article.publishedAt)}
         </time>
         <span className="ml-auto flex items-center gap-3">
+          <button
+            onClick={onToggleTag}
+            className={`inline-flex items-center gap-1 transition ${
+              tagged ? "text-blue-600 dark:text-blue-400" : "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+            }`}
+          >
+            <svg className="h-3.5 w-3.5" fill={tagged ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+            {tagged ? "已收录" : "Tag"}
+          </button>
           <button
             onClick={handleShare}
             className={`inline-flex items-center gap-1 transition hover:text-neutral-600 dark:hover:text-neutral-300 ${
