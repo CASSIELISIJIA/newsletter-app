@@ -160,7 +160,7 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
           </button>
         )}
         {/* 视图切换 */}
-        <div className="flex shrink-0 rounded-lg border border-neutral-300 p-0.5 dark:border-neutral-700">
+        <div className={`flex shrink-0 rounded-lg border border-neutral-300 p-0.5 dark:border-neutral-700 ${view === "newsletter" ? "ml-auto" : ""}`}>
           <button
             onClick={() => setView("news")}
             className={`rounded-md px-3 py-2 text-sm font-medium transition ${

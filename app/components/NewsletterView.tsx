@@ -79,7 +79,10 @@ export default function NewsletterView({
 
   if (taggedArticles.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-neutral-300 py-16 text-center dark:border-neutral-700">
+      <div className="min-w-0 rounded-xl border border-dashed border-neutral-300 py-20 text-center dark:border-neutral-700">
+        <svg className="mx-auto mb-3 h-10 w-10 text-neutral-300 dark:text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+        </svg>
         <p className="text-neutral-500 dark:text-neutral-400">还没有收录任何新闻</p>
         <p className="mt-1 text-sm text-neutral-400 dark:text-neutral-500">
           回到新闻列表，点击 Tag 按钮收录文章
