@@ -281,6 +281,25 @@ function FilterButton({ active, onClick, children }: { active: boolean; onClick:
 function NewsCard({ article }: { article: NewsArticle }) {
   const hasAiib = article.entityIds.includes("aiib");
   const otherEntities = article.entityIds.filter((id) => id !== "aiib");
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const text = `${article.title}\n${article.url}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <article
@@ -329,11 +348,35 @@ function NewsCard({ article }: { article: NewsArticle }) {
         <time dateTime={article.publishedAt} title={formatFullDate(article.publishedAt)}>
           {formatRelativeTime(article.publishedAt)}
         </time>
-        <span className="ml-auto inline-flex items-center gap-1 text-neutral-400 transition group-hover:text-neutral-600 dark:group-hover:text-neutral-300">
-          阅读原文
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
+        <span className="ml-auto flex items-center gap-3">
+          <button
+            onClick={handleShare}
+            className={`inline-flex items-center gap-1 transition hover:text-neutral-600 dark:hover:text-neutral-300 ${
+              copied ? "text-green-500" : "text-neutral-400"
+            }`}
+          >
+            {copied ? (
+              <>
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                已复制
+              </>
+            ) : (
+              <>
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m-8 4h8m-8 4h5M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                </svg>
+                Share
+              </>
+            )}
+          </button>
+          <a href={article.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-neutral-400 transition group-hover:text-neutral-600 dark:group-hover:text-neutral-300">
+            阅读原文
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
         </span>
       </div>
     </article>
