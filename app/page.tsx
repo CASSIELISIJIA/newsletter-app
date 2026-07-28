@@ -1,65 +1,65 @@
-import Image from "next/image";
+import NewsletterClient from "@/app/components/NewsletterClient";
+import { getNews } from "@/app/lib/news";
+import { NEWS_CATEGORIES, NEWS_SOURCES, TRACKED_ENTITIES } from "@/app/lib/preferences";
 
-export default function Home() {
+// 每 30 分钟重新抓取 RSS（ISR 缓存）
+export const revalidate = 1800;
+
+export default async function Home() {
+  const { articles, source } = await getNews();
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const aiibCount = articles.filter((a) => a.entityIds.includes("aiib")).length;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <>
+      {/* ---- Hero 头部 ---- */}
+      <header className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
+        <div className="mx-auto max-w-6xl px-4 py-12 md:px-6 md:py-16">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                source === "rss" ? "bg-green-500" : "bg-amber-500"
+              }`}
+            />
+            {source === "rss" ? "实时 RSS 更新" : "演示数据 · RSS 待连接"}
+            · 海外重点媒体
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            全球政经要闻 Newsletter
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-3 max-w-2xl text-neutral-600 dark:text-neutral-400">
+            聚焦全球重大政治与经济事件，覆盖日本、韩国、印度、中东、美国、英国、欧洲、澳大利亚及亚太地区，聚合 Reuters、Bloomberg、Nikkei、Japan Times、Korea Times、SCMP、Doha News 等海外重点媒体报道。
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+            <span>关注 {NEWS_SOURCES.length} 家媒体</span>
+            <span>·</span>
+            <span>{NEWS_CATEGORIES.length} 大编辑方向</span>
+            <span>·</span>
+            <span>追踪 {TRACKED_ENTITIES.length} 个重点机构</span>
+            {aiibCount > 0 && (
+              <>
+                <span>·</span>
+                <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                  AIIB 专题 {aiibCount} 篇
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ---- 主体 ---- */}
+      <NewsletterClient articles={articles} now={now} />
+
+      {/* ---- 页脚 ---- */}
+      <footer className="border-t border-neutral-200 dark:border-neutral-800">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm text-neutral-400 dark:text-neutral-500 md:px-6">
+          <p>
+            全球政经要闻 Newsletter · 数据来源：{source === "rss" ? "Google News RSS + 媒体直连" : "演示数据"}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </footer>
+    </>
   );
 }
