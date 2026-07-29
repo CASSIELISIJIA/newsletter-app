@@ -13,9 +13,9 @@ import NewsletterView, {
   type NewsletterSectionId,
 } from "@/app/components/NewsletterView";
 
-type TimeRange = "72h" | "48h" | "24h" | "today" | "custom";
+type TimeRange = "72h" | "48h" | "24h" | "today" | "custom" | "all";
 
-const TIME_RANGE_OPTIONS: { id: TimeRange; label: string }[] = [
+const TIME_RANGE_OPTIONS: { id: TimeRange | "all"; label: string }[] = [
   { id: "72h", label: "72小时" },
   { id: "48h", label: "48小时" },
   { id: "24h", label: "24小时" },
@@ -23,7 +23,7 @@ const TIME_RANGE_OPTIONS: { id: TimeRange; label: string }[] = [
   { id: "custom", label: "自定义" },
 ];
 
-const RANGE_MS: Record<Exclude<TimeRange, "custom">, number> = {
+const RANGE_MS: Record<Exclude<TimeRange | "all", "custom">, number> = {
   "72h": 3 * 24 * 60 * 60 * 1000,
   "48h": 2 * 24 * 60 * 60 * 1000,
   "24h": 24 * 60 * 60 * 1000,
@@ -39,7 +39,7 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
   const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState<NewsCategoryId | "all">("all");
   const [activeSource, setActiveSource] = useState<string>("all");
-  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>("72h");
+  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange | "all">("72h");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [aiibOnly, setAiibOnly] = useState(false);
@@ -82,7 +82,7 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
       if (activeTimeRange === "custom") {
         if (customStart && articleTime < new Date(customStart).getTime()) return false;
         if (customEnd && articleTime > new Date(customEnd).getTime()) return false;
-      } else if (activeTimeRange !== "custom") {
+      } else if (activeTimeRange !== "all" && activeTimeRange !== "custom") {
         const articleDate = new Date(article.publishedAt).toDateString();
         if (activeTimeRange === "today") {
           const today = new Date(now).toDateString();
