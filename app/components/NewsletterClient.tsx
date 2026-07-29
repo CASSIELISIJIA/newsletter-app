@@ -39,7 +39,7 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
   const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState<NewsCategoryId | "all">("all");
   const [activeSource, setActiveSource] = useState<string>("all");
-  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>("all");
+  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>("72h");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [aiibOnly, setAiibOnly] = useState(false);
@@ -82,7 +82,7 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
       if (activeTimeRange === "custom") {
         if (customStart && articleTime < new Date(customStart).getTime()) return false;
         if (customEnd && articleTime > new Date(customEnd).getTime()) return false;
-      } else if (activeTimeRange !== "all") {
+      } else if (activeTimeRange !== "custom") {
         if (activeTimeRange === "today") {
           const today = new Date(now).toDateString();
           if (articleDate !== today) return false;
