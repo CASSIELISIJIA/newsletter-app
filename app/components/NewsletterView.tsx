@@ -61,11 +61,11 @@ export default function NewsletterView({
   }, [taggedArticles, taggedSections]);
 
   const handleCopy = () => {
-    let text = "全球政经要闻 Newsletter\n\n";
+    let text = '<span style="font-family:Arial;font-size:12px"><strong>全球政经要闻 Newsletter</strong></span>\n\n';
     for (const section of NEWSLETTER_SECTIONS) {
       const items = grouped[section.id];
       if (!items || items.length === 0) continue;
-      text += `${section.label}\n`;
+      text += `<span style="font-family:Arial;font-size:14px;font-weight:bold">${section.label}</span>\n`;
       for (const item of items) {
         text += `• ${item.title}\n  ${item.url}\n`;
       }
@@ -79,7 +79,7 @@ export default function NewsletterView({
 
   if (taggedArticles.length === 0) {
     return (
-      <div className="min-w-0 rounded-xl border border-dashed border-neutral-300 py-20 text-center dark:border-neutral-700">
+      <div className="w-full rounded-xl border border-dashed border-neutral-300 py-20 text-center dark:border-neutral-700">
         <svg className="mx-auto mb-3 h-10 w-10 text-neutral-300 dark:text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
         </svg>
@@ -92,7 +92,7 @@ export default function NewsletterView({
   }
 
   return (
-    <div className="min-w-0">
+    <div className="w-full">
       {/* 工具栏 */}
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -125,9 +125,8 @@ export default function NewsletterView({
           if (!items || items.length === 0) return null;
           return (
             <div key={section.id}>
-              <h2 className="mb-3 border-b border-neutral-200 pb-2 text-sm font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
+              <h2 className="mb-3 border-b border-neutral-200 pb-2 text-base font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
                 {section.label}
-                <span className="ml-2 text-xs font-normal text-neutral-400">{items.length}</span>
               </h2>
               <div className="space-y-1">
                 {items.map((article) => (

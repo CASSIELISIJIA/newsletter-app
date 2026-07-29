@@ -188,10 +188,10 @@ export const RSS_FEEDS: RssFeedConfig[] = [
   {
     id: "feed-trade",
     name: "国际贸易与政策",
-    url: "https://news.google.com/rss/search?q=%22trade%20agreement%22%20OR%20tariff%20OR%20%22supply%20chain%22%20OR%20%22industrial%20policy%22%20OR%20%22investment%20rules%22&hl=en-US&gl=US&ceid=US:en",
+    url: "https://news.google.com/rss/search?q=%22trade%20agreement%22%20OR%20tariff%20OR%20%22trade%20policy%22%20OR%22trade%20deal%22%20OR%22trade%20war%22%20OR%22WTO%22%20OR%22customs%22%20OR%22quotas%22%20OR%22export%20control%22%20OR%22sanction%22%20OR%22industrial%20policy%22%20OR%22investment%20rules%22%20OR%22trade%20barrier%22%20OR%22trade%20tension%22%20OR%22trade%20negotiation%22%20OR%22trade%20pact%22%20OR%22trade%20cooperation%22%20OR%22trade%20partnership%22%20OR%22trade%20alliance%22%20OR%22trade%20framework%22%20OR%22trade%20accord%22%20OR%22trade%20dialogue%22%20OR%22trade%20council%22%20OR%22trade%20commission%22%20OR%22trade%20ministry%22%20OR%22trade%20department%22%20OR%22trade%20agency%22%20OR%22trade%20bureau%22%20OR%22trade%20office%22%20OR%22trade%20representative%22%20OR%22trade%20attach%C3%A9%22%20OR%22trade%20delegation%22%20OR%22trade%20mission%22%20OR%22trade%20forum%22%20OR%22trade%20summit%22%20OR%22trade%20conference%22%20OR%22trade%20symposium%22%20OR%22trade%20seminar%22%20OR%22trade%20workshop%22%20OR%22trade%20event%22%20OR%22trade%20gathering%22%20OR%22trade%20meeting%22%20OR%22trade%20talk%22%20OR%22trade%20consultation%22%20OR%22trade%20discussion%22%20OR%22trade%20exchange%22%20OR%22trade%20cooperation%22%20OR%22trade%20partnership%22%20OR%22trade%20alliance%22%20OR%22trade%20union%22%20OR%22trade%20association%22%20OR%22trade%20federation%22%20OR%22trade%20chamber%22%20OR%22trade%22%20hl=en-US&gl=US&ceid=US:en",
     type: "google-news",
     defaultCategory: "trade-policy",
-    description: "贸易协定、关税调整、供应链、产业政策",
+    description: "贸易协定、关税调整、产业政策、投资规则（排除企业新闻）",
   },
   // ---- 亚太政经动态 ----
   {

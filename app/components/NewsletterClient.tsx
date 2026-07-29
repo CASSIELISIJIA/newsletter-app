@@ -13,25 +13,21 @@ import NewsletterView, {
   type NewsletterSectionId,
 } from "@/app/components/NewsletterView";
 
-type TimeRange = "1h" | "6h" | "12h" | "24h" | "3days" | "week" | "month" | "all" | "custom";
+type TimeRange = "72h" | "48h" | "24h" | "today" | "custom";
 
 const TIME_RANGE_OPTIONS: { id: TimeRange; label: string }[] = [
+  { id: "72h", label: "72小时" },
+  { id: "48h", label: "48小时" },
   { id: "24h", label: "24小时" },
-  { id: "3days", label: "3天" },
-  { id: "week", label: "一周" },
-  { id: "month", label: "一月" },
-  { id: "all", label: "全部" },
+  { id: "today", label: "Today" },
   { id: "custom", label: "自定义" },
 ];
 
-const RANGE_MS: Record<Exclude<TimeRange, "all" | "custom">, number> = {
-  "1h": 1 * 60 * 60 * 1000,
-  "6h": 6 * 60 * 60 * 1000,
-  "12h": 12 * 60 * 60 * 1000,
+const RANGE_MS: Record<Exclude<TimeRange, "custom">, number> = {
+  "72h": 3 * 24 * 60 * 60 * 1000,
+  "48h": 2 * 24 * 60 * 60 * 1000,
   "24h": 24 * 60 * 60 * 1000,
-  "3days": 3 * 24 * 60 * 60 * 1000,
-  week: 7 * 24 * 60 * 60 * 1000,
-  month: 30 * 24 * 60 * 60 * 1000,
+  "today": 24 * 60 * 60 * 1000, // Today will filter to today's articles only
 };
 
 interface NewsletterClientProps {
@@ -81,13 +77,19 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
   const filtered = useMemo(() => {
     return articles.filter((article) => {
       const articleTime = new Date(article.publishedAt).getTime();
+      const articleDate = new Date(article.publishedAt).toDateString();
 
       if (activeTimeRange === "custom") {
         if (customStart && articleTime < new Date(customStart).getTime()) return false;
         if (customEnd && articleTime > new Date(customEnd).getTime()) return false;
       } else if (activeTimeRange !== "all") {
-        const age = now - articleTime;
-        if (age > RANGE_MS[activeTimeRange]) return false;
+        if (activeTimeRange === "today") {
+          const today = new Date(now).toDateString();
+          if (articleDate !== today) return false;
+        } else {
+          const age = now - articleTime;
+          if (age > RANGE_MS[activeTimeRange]) return false;
+        }
       }
 
       if (aiibOnly && !article.entityIds.includes("aiib")) return false;
@@ -173,18 +175,13 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
           </button>
           <button
             onClick={() => setView("newsletter")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition ${
+            className={`rounded-md px-3 py-2 text-sm font-medium transition ${
               view === "newsletter"
                 ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
                 : "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400"
             }`}
           >
             Newsletter
-            {taggedCount > 0 && (
-              <span className={`rounded-full px-1.5 text-xs ${
-                view === "newsletter" ? "bg-white/20" : "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-              }`}>{taggedCount}</span>
-            )}
           </button>
         </div>
       </div>
