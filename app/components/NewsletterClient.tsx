@@ -23,7 +23,7 @@ const TIME_RANGE_OPTIONS: { id: TimeRange | "all"; label: string }[] = [
   { id: "custom", label: "自定义" },
 ];
 
-const RANGE_MS: Record<Exclude<TimeRange | "all", "custom">, number> = {
+const RANGE_MS: Record<Exclude<TimeRange, "custom" | "all">, number> = {
   "72h": 3 * 24 * 60 * 60 * 1000,
   "48h": 2 * 24 * 60 * 60 * 1000,
   "24h": 24 * 60 * 60 * 1000,
