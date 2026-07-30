@@ -83,7 +83,6 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
         if (customStart && articleTime < new Date(customStart).getTime()) return false;
         if (customEnd && articleTime > new Date(customEnd).getTime()) return false;
       } else if (activeTimeRange !== "custom") {
-        const articleDate = new Date(article.publishedAt).toDateString();
         if (activeTimeRange === "today") {
           const today = new Date(now).toDateString();
           if (articleDate !== today) return false;
