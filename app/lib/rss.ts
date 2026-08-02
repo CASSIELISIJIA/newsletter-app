@@ -329,14 +329,21 @@ export async function fetchAllFeeds(): Promise<NewsArticle[]> {
 
   const allArticles: NewsArticle[] = [];
   const seenUrls = new Set<string>();
+  // 同一篇文章可能既出现在 direct feed（原始 URL）又出现在 google-news feed
+  // （news.google.com 跳转链接），URL 不同所以 seenUrls 去不掉，需要按 normalized title 二次去重。
+  // RSS_FEEDS 中 direct feed 排在数组前部，所以 direct 的 article 先入数组，
+  // google-news 同篇文章后被过滤，从而保留原始 URL 而非 google news 跳转链接。
+  const seenTitles = new Set<string>();
 
   for (const result of results) {
     if (result.status === "fulfilled") {
       for (const article of result.value) {
-        if (!seenUrls.has(article.url)) {
-          seenUrls.add(article.url);
-          allArticles.push(article);
-        }
+        if (seenUrls.has(article.url)) continue;
+        const normTitle = normalizeTitle(article.title);
+        if (normTitle && seenTitles.has(normTitle)) continue;
+        seenUrls.add(article.url);
+        if (normTitle) seenTitles.add(normTitle);
+        allArticles.push(article);
       }
     }
   }
@@ -353,6 +360,21 @@ export async function fetchAllFeeds(): Promise<NewsArticle[]> {
   });
 
   return allArticles;
+}
+
+// ---- 标题归一化（用于跨 feed 去重）----
+// 不同 feed 抓到的同一篇文章，标题可能有细微差异（媒体前缀/后缀、空格、大小写）
+// 归一化后用于二次去重，避免 direct 和 google-news 重复。
+// 策略：小写化 → 去掉所有非字母数字字符 → 折叠空格 → 截断前 80 字符。
+// 不做媒体前后缀正则替换（容易误伤有意义的标题），靠截断前 80 字符就够区分。
+function normalizeTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\u4e00-\u9fa5]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
 }
 
 // ---- 检查 RSS 是否可用 ----

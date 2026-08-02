@@ -433,13 +433,11 @@ function NewsCard({ article, tagged, onToggleTag }: { article: NewsArticle; tagg
         <span className="text-neutral-500 dark:text-neutral-400">{article.region}</span>
       </div>
 
-      <h2 className="mb-1.5 text-sm font-semibold leading-snug sm:text-base">
+      <h2 className="mb-3 text-sm font-semibold leading-snug sm:text-base">
         <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-neutral-900 transition group-hover:text-neutral-600 dark:text-neutral-100 dark:group-hover:text-neutral-300">
           {article.title}
         </a>
       </h2>
-
-      <p className="mb-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{article.summary}</p>
 
       {(article.countryIds || []).length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1.5">

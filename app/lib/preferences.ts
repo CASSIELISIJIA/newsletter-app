@@ -235,10 +235,105 @@ export const COUNTRY_TOPICS: CountryTopic[] = [
 ];
 
 // ==================== 4. RSS Feed 配置 ====================
-// Google News RSS 按关键词聚合全网新闻（覆盖 Reuters/Bloomberg/Nikkei/CNA 等）
-// direct 类型为媒体自有 RSS（如 Doha News）
-// 新增/修改 feed 只需在此数组中操作
+// direct 类型为媒体自有 RSS（拿到原始新闻源 URL，非 Google News 跳转链接）
+// google-news 类型为 Google News 关键词聚合（用于专题搜索 / 无自家 RSS 的媒体）
+// direct feed 排在数组前部，配合 fetchAllFeeds 的去重逻辑优先保留原始 URL
 export const RSS_FEEDS: RssFeedConfig[] = [
+  // ============ 主流媒体直连 RSS（type: direct）============
+  // 拿到的 link 即原始新闻源 URL，避免 Google News JS 跳转链接
+  {
+    id: "feed-bbc-world",
+    name: "BBC News",
+    url: "http://feeds.bbci.co.uk/news/world/rss.xml",
+    type: "direct",
+    defaultCategory: "global-affairs",
+    description: "BBC World News 自有 RSS",
+  },
+  {
+    id: "feed-guardian-world",
+    name: "The Guardian",
+    url: "https://www.theguardian.com/world/rss",
+    type: "direct",
+    defaultCategory: "global-affairs",
+    description: "The Guardian World 自有 RSS",
+  },
+  {
+    id: "feed-aljazeera",
+    name: "Al Jazeera",
+    url: "https://www.aljazeera.com/xml/rss/all.xml",
+    type: "direct",
+    defaultCategory: "global-affairs",
+    description: "Al Jazeera 全量 RSS",
+  },
+  {
+    id: "feed-dw",
+    name: "Deutsche Welle",
+    url: "https://rss.dw.com/rdf/rss-en-all",
+    type: "direct",
+    defaultCategory: "global-affairs",
+    description: "DW English 全量 RSS",
+  },
+  {
+    id: "feed-scmp",
+    name: "South China Morning Post",
+    url: "https://www.scmp.com/rss/4/feed",
+    type: "direct",
+    defaultCategory: "asia-pacific",
+    description: "SCMP News 自有 RSS",
+  },
+  {
+    id: "feed-japantimes",
+    name: "The Japan Times",
+    url: "https://www.japantimes.co.jp/feed/",
+    type: "direct",
+    defaultCategory: "asia-pacific",
+    description: "Japan Times 自有 RSS",
+  },
+  {
+    id: "feed-smh",
+    name: "The Sydney Morning Herald",
+    url: "https://www.smh.com.au/rss/feed.xml",
+    type: "direct",
+    defaultCategory: "asia-pacific",
+    description: "SMH 自有 RSS",
+  },
+  {
+    id: "feed-politico-eu",
+    name: "Politico Europe",
+    url: "https://www.politico.eu/feed/",
+    type: "direct",
+    defaultCategory: "global-affairs",
+    description: "Politico Europe 自有 RSS",
+  },
+  {
+    id: "feed-nyt-world",
+    name: "The New York Times",
+    url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+    type: "direct",
+    defaultCategory: "global-affairs",
+    description: "NYT World 自有 RSS",
+  },
+  {
+    id: "feed-nikkei",
+    name: "Nikkei Asia",
+    url: "https://asia.nikkei.com/rss/feed/nar",
+    type: "direct",
+    defaultCategory: "asia-pacific",
+    description: "Nikkei Asia 自有 RSS",
+  },
+  // ---- Doha News 直连 ----
+  {
+    id: "feed-dohanews",
+    name: "Doha News",
+    url: "https://dohanews.co/category/news/feed/",
+    type: "direct",
+    defaultCategory: "global-affairs",
+    description: "卡塔尔及海湾地区新闻直连",
+  },
+
+  // ============ Google News 关键词聚合（type: google-news）============
+  // 用于：AIIB 专题、5 大编辑方向关键词搜索、国家/地区专题、无自家 RSS 的媒体聚合
+  // 注意：link 仍是 news.google.com 跳转链接（Google 反爬要求 JS 解码，已与 direct feed 去重）
   // ---- AIIB 专题 ----
   {
     id: "feed-aiib",
@@ -292,15 +387,6 @@ export const RSS_FEEDS: RssFeedConfig[] = [
     type: "google-news",
     defaultCategory: "multilateral",
     description: "Peer 机构贷款、融资、政策调整、气候融资",
-  },
-  // ---- Doha News 直连 ----
-  {
-    id: "feed-dohanews",
-    name: "Doha News",
-    url: "https://dohanews.co/category/news/feed/",
-    type: "direct",
-    defaultCategory: "global-affairs",
-    description: "卡塔尔及海湾地区新闻直连",
   },
   // ---- 地区专题：日本 ----
   {
