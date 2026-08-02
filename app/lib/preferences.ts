@@ -1,4 +1,4 @@
-import type { NewsCategory, NewsSource, RssFeedConfig, TrackedEntity } from "./types";
+import type { NewsCategory, NewsSource, RssFeedConfig, TrackedEntity, CountryTopic } from "./types";
 
 // ============================================================
 //  新闻偏好与选文方向配置 (Editorial Preferences)
@@ -34,6 +34,8 @@ export const NEWS_SOURCES: NewsSource[] = [
   { id: "politico-eu", name: "Politico Europe", country: "EU", homepage: "https://www.politico.eu" },
   { id: "ftchinese", name: "FT Chinese", country: "UK", homepage: "https://www.ftchinese.com" },
   { id: "caixin", name: "Caixin Global", country: "CN", homepage: "https://www.caixinglobal.com" },
+  { id: "dohanews", name: "Doha News", country: "QA", homepage: "https://dohanews.co" },
+  { id: "qna", name: "Qatar News Agency", country: "QA", homepage: "https://qna.org.qa" },
 ];
 
 // ==================== 2. 五大编辑方向 ====================
@@ -161,6 +163,77 @@ export const TRACKED_ENTITIES: TrackedEntity[] = [
   },
 ];
 
+// ==================== 3.5 国家专题 ====================
+// 监测目标国家的经济、政治大事件（不收录企业自身新闻）
+export const COUNTRY_TOPICS: CountryTopic[] = [
+  {
+    id: "india",
+    name: "印度",
+    nameEn: "India",
+    keywords: ["India", "Indian", "Modi", "Delhi", "Mumbai", "RBI", "Reserve Bank of India", "New Delhi"],
+  },
+  {
+    id: "vietnam",
+    name: "越南",
+    nameEn: "Vietnam",
+    keywords: ["Vietnam", "Vietnamese", "Hanoi", "Ho Chi Minh City", "SBV"],
+  },
+  {
+    id: "singapore",
+    name: "新加坡",
+    nameEn: "Singapore",
+    keywords: ["Singapore", "Singaporean", "MAS", "Monetary Authority of Singapore"],
+  },
+  {
+    id: "indonesia",
+    name: "印度尼西亚",
+    nameEn: "Indonesia",
+    keywords: ["Indonesia", "Indonesian", "Jakarta", "BI rate", "Bank Indonesia", "Jokowi", "Prabowo"],
+  },
+  {
+    id: "china",
+    name: "中国",
+    nameEn: "China",
+    keywords: ["China", "Chinese", "Beijing", "Xi Jinping", "PBOC", "People's Bank of China", "CCP"],
+  },
+  {
+    id: "japan",
+    name: "日本",
+    nameEn: "Japan",
+    keywords: ["Japan", "Japanese", "Tokyo", "BOJ", "Bank of Japan", "Kishida", "Diet"],
+  },
+  {
+    id: "korea",
+    name: "韩国",
+    nameEn: "South Korea",
+    keywords: ["South Korea", "Korea", "Korean", "Seoul", "Bank of Korea", "BOK"],
+  },
+  {
+    id: "russia",
+    name: "俄罗斯",
+    nameEn: "Russia",
+    keywords: ["Russia", "Russian", "Moscow", "Putin", "Kremlin", "Central Bank of Russia"],
+  },
+  {
+    id: "ukraine",
+    name: "乌克兰",
+    nameEn: "Ukraine",
+    keywords: ["Ukraine", "Ukrainian", "Kyiv", "Zelensky", "Zelenskyy"],
+  },
+  {
+    id: "qatar",
+    name: "卡塔尔",
+    nameEn: "Qatar",
+    keywords: ["Qatar", "Qatari", "Doha", "Al Thani"],
+  },
+  {
+    id: "uk",
+    name: "英国",
+    nameEn: "United Kingdom",
+    keywords: ["UK ", "U.K.", "Britain", "British", "London", "Bank of England", "BoE", "Treasury"],
+  },
+];
+
 // ==================== 4. RSS Feed 配置 ====================
 // Google News RSS 按关键词聚合全网新闻（覆盖 Reuters/Bloomberg/Nikkei/CNA 等）
 // direct 类型为媒体自有 RSS（如 Doha News）
@@ -283,6 +356,87 @@ export const RSS_FEEDS: RssFeedConfig[] = [
     defaultCategory: "asia-pacific",
     description: "澳大利亚经济、RBA、贸易、矿业",
   },
+  // ---- 国家专题：越南 ----
+  {
+    id: "feed-vietnam",
+    name: "越南政经",
+    url: "https://news.google.com/rss/search?q=Vietnam%20economy%20OR%20Vietnam%20policy%20OR%20Vietnam%20GDP%20OR%20Vietnam%20trade&hl=en-US&gl=VN&ceid=VN:en",
+    type: "google-news",
+    defaultCategory: "asia-pacific",
+    description: "越南经济、政策、贸易、制造业",
+  },
+  // ---- 国家专题：新加坡 ----
+  {
+    id: "feed-singapore",
+    name: "新加坡政经",
+    url: "https://news.google.com/rss/search?q=Singapore%20economy%20OR%20MAS%20OR%20Singapore%20policy%20OR%20Singapore%20trade&hl=en-US&gl=SG&ceid=SG:en",
+    type: "google-news",
+    defaultCategory: "asia-pacific",
+    description: "新加坡经济、MAS、贸易、金融中心",
+  },
+  // ---- 国家专题：印度尼西亚 ----
+  {
+    id: "feed-indonesia",
+    name: "印度尼西亚政经",
+    url: "https://news.google.com/rss/search?q=Indonesia%20economy%20OR%20Indonesia%20GDP%20OR%20Bank%20Indonesia%20OR%20Indonesia%20policy&hl=en-US&gl=ID&ceid=ID:en",
+    type: "google-news",
+    defaultCategory: "asia-pacific",
+    description: "印尼经济、GDP、央行、政策",
+  },
+  // ---- 国家专题：中国 ----
+  {
+    id: "feed-china",
+    name: "中国政经",
+    url: "https://news.google.com/rss/search?q=China%20economy%20OR%20PBOC%20OR%20China%20policy%20OR%20China%20trade%20OR%20Beijing&hl=en-US&gl=CN&ceid=CN:en",
+    type: "google-news",
+    defaultCategory: "global-affairs",
+    description: "中国经济、PBOC、政策、贸易",
+  },
+  // ---- 国家专题：俄罗斯 ----
+  {
+    id: "feed-russia",
+    name: "俄罗斯政经",
+    url: "https://news.google.com/rss/search?q=Russia%20economy%20OR%20Russia%20sanction%20OR%20Kremlin%20OR%20Central%20Bank%20of%20Russia&hl=en-US&gl=RU&ceid=RU:en",
+    type: "google-news",
+    defaultCategory: "global-affairs",
+    description: "俄罗斯经济、制裁、央行、地缘政治",
+  },
+  // ---- 国家专题：乌克兰 ----
+  {
+    id: "feed-ukraine",
+    name: "乌克兰政经",
+    url: "https://news.google.com/rss/search?q=Ukraine%20economy%20OR%20Ukraine%20reconstruction%20OR%20Kyiv%20OR%20Ukraine%20war&hl=en-US&gl=UA&ceid=UA:en",
+    type: "google-news",
+    defaultCategory: "global-affairs",
+    description: "乌克兰经济、战后重建、地缘冲突",
+  },
+  // ---- 国家专题：卡塔尔 ----
+  {
+    id: "feed-qatar",
+    name: "卡塔尔政经",
+    url: "https://news.google.com/rss/search?q=Qatar%20economy%20OR%20Qatar%20Energy%20OR%20Doha%20OR%20Qatar%20investment&hl=en-US&gl=QA&ceid=QA:en",
+    type: "google-news",
+    defaultCategory: "global-affairs",
+    description: "卡塔尔经济、能源、投资、海湾事务",
+  },
+  // ---- 重点媒体：QNA（Qatar News Agency，无自有 RSS，用 Google News 聚合）----
+  {
+    id: "feed-qna",
+    name: "Qatar News Agency",
+    url: "https://news.google.com/rss/search?q=site%3Aqna.org.qa%20OR%20%22Qatar%20News%20Agency%22%20OR%20QNA&hl=en-US&gl=QA&ceid=QA:en",
+    type: "google-news",
+    defaultCategory: "global-affairs",
+    description: "卡塔尔通讯社 QNA 报道聚合",
+  },
+  // ---- 国家专题：英国 ----
+  {
+    id: "feed-uk",
+    name: "英国政经",
+    url: "https://news.google.com/rss/search?q=UK%20economy%20OR%20Bank%20of%20England%20OR%20Britain%20policy%20OR%20UK%20budget%20OR%20Treasury&hl=en-US&gl=GB&ceid=GB:en",
+    type: "google-news",
+    defaultCategory: "global-affairs",
+    description: "英国经济、BoE、财政、政策",
+  },
 ];
 
 // ==================== 工具函数 ====================
@@ -312,4 +466,8 @@ export function getEntityHomepage(entityId: string): string {
 
 export function getHighlightEntities(): TrackedEntity[] {
   return TRACKED_ENTITIES.filter((e) => e.highlight);
+}
+
+export function getCountryName(countryId: string): string {
+  return COUNTRY_TOPICS.find((c) => c.id === countryId)?.name ?? countryId;
 }

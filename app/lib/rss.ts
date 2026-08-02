@@ -4,6 +4,7 @@ import {
   NEWS_SOURCES,
   RSS_FEEDS,
   TRACKED_ENTITIES,
+  COUNTRY_TOPICS,
 } from "./preferences";
 
 // ============================================================
@@ -52,11 +53,43 @@ function extractSourceFromTitle(title: string): {
 }
 
 // ---- 将来源名称匹配到已配置的媒体源 ----
+// 包含常见别名，提升匹配命中率，避免主流媒体被误判为 "other"
+const SOURCE_ALIASES: Record<string, string> = {
+  reuters: "reuters",
+  ap: "ap", "associated press": "ap", "ap news": "ap",
+  bbc: "bbc", "bbc news": "bbc", "bbc.com": "bbc",
+  nyt: "nyt", "nytimes": "nyt", "the new york times": "nyt", "new york times": "nyt",
+  wsj: "wsj", "wall street journal": "wsj", "the wall street journal": "wsj",
+  ft: "ft", "financial times": "ft", "ft.com": "ft",
+  bloomberg: "bloomberg",
+  guardian: "guardian", "the guardian": "guardian",
+  economist: "economist", "the economist": "economist",
+  cnn: "cnn",
+  aljazeera: "aljazeera", "al jazeera": "aljazeera",
+  dw: "dw", "deutsche welle": "dw",
+  nikkei: "nikkei", "nikkei asia": "nikkei",
+  japantimes: "japantimes", "japan times": "japantimes", "the japan times": "japantimes",
+  koreatimes: "koreatimes", "korea times": "koreatimes", "the korea times": "koreatimes",
+  scmp: "scmp", "south china morning post": "scmp",
+  hindu: "hindu", "the hindu": "hindu",
+  "abc-au": "abc-au", "abc news": "abc-au", "abc news australia": "abc-au",
+  smh: "smh", "sydney morning herald": "smh", "the sydney morning herald": "smh",
+  "politico-eu": "politico-eu", "politico": "politico-eu", "politico europe": "politico-eu",
+  ftchinese: "ftchinese", "ft chinese": "ftchinese",
+  caixin: "caixin", "caixin global": "caixin",
+  dohanews: "dohanews", "doha news": "dohanews",
+  qna: "qna", "qatar news agency": "qna", "qna.org.qa": "qna",
+};
+
 function matchSourceId(sourceName: string): string {
   if (!sourceName) return "other";
-  const lower = sourceName.toLowerCase();
+  const lower = sourceName.toLowerCase().trim();
+  // 先走别名表
+  if (SOURCE_ALIASES[lower]) return SOURCE_ALIASES[lower];
+  // 再走配置媒体的双向 includes 匹配
   for (const src of NEWS_SOURCES) {
-    if (lower.includes(src.name.toLowerCase()) || src.name.toLowerCase().includes(lower)) {
+    const srcLower = src.name.toLowerCase();
+    if (lower.includes(srcLower) || srcLower.includes(lower)) {
       return src.id;
     }
   }
@@ -88,6 +121,22 @@ function detectEntities(
   }
 
   return { entityIds, aiibMentionCount };
+}
+
+// ---- 检测文章关联的国家专题 ----
+function detectCountry(title: string, content: string): string[] {
+  const text = `${title} ${content}`.toLowerCase();
+  const countryIds: string[] = [];
+  for (const country of COUNTRY_TOPICS) {
+    for (const kw of country.keywords) {
+      // "UK " 和 "U.K." 这类带空格/标点的关键词用 includes 即可
+      if (text.includes(kw.toLowerCase())) {
+        countryIds.push(country.id);
+        break;
+      }
+    }
+  }
+  return countryIds;
 }
 
 function escapeRegExp(s: string): string {
@@ -155,6 +204,27 @@ function classifyCategory(
   return bestCategory;
 }
 
+// ---- 企业新闻过滤（仅用于 trade-policy 类别）----
+// trade-policy 只关注贸易政策、经济政策大事件，不关注企业自身发展
+function isCorporateNews(title: string, content: string): boolean {
+  const text = `${title} ${content}`.toLowerCase();
+  // 企业新闻特征词：财报、并购、IPO、股价、CEO、产品发布、季度业绩等
+  const corporateKeywords = [
+    "earnings", "quarterly results", "revenue rose", "profit fell", "net income",
+    "shares surged", "stock jumped", "ipo", "buyout", "acquires", "merger",
+    "ceo says", "ceo of", "appoints", "resigns as ceo", "new ceo",
+    "launches new", "unveils", "debuts", "rolls out",
+    "market cap", "dividend", "buyback", "stock split",
+    "beats estimates", "misses estimates", "guidance",
+  ];
+  // 需要多个企业特征词同时命中才算企业新闻（避免误杀）
+  let hitCount = 0;
+  for (const kw of corporateKeywords) {
+    if (text.includes(kw)) hitCount++;
+  }
+  return hitCount >= 2;
+}
+
 // ---- 解析单个 RSS item 为 NewsArticle ----
 function parseRssItem(
   item: RssItem,
@@ -184,7 +254,23 @@ function parseRssItem(
   // 分类
   const category = classifyCategory(cleanTitle, content, feed.defaultCategory);
 
+  // 所有类别：过滤企业新闻，只保留政策/宏观经济大事件
+  if (isCorporateNews(cleanTitle, content)) {
+    return null;
+  }
+
+  // 检测关联的国家专题
+  const countryIds = detectCountry(cleanTitle, content);
+
   const sourceId = matchSourceId(sourceName);
+
+  // 四大核心板块（全球政经、国际贸易、亚太政经、金融市场）：
+  // 只保留配置媒体源（NEWS_SOURCES）的新闻，过滤掉非指定来源（全网小报/聚合站）
+  // AIIB 专题、多边机构、国家专题不受此限制（机构/地区新闻来源可更广）
+  const CORE_CATEGORIES: NewsCategoryId[] = ["global-affairs", "trade-policy", "asia-pacific", "markets"];
+  if (CORE_CATEGORIES.includes(category) && sourceId === "other") {
+    return null;
+  }
 
   return {
     id: `${feed.id}-${index}`,
@@ -197,6 +283,7 @@ function parseRssItem(
     summary: content.length > 300 ? content.substring(0, 300) + "…" : content,
     region: detectRegion(cleanTitle, content),
     entityIds,
+    countryIds,
   };
 }
 
@@ -254,10 +341,16 @@ export async function fetchAllFeeds(): Promise<NewsArticle[]> {
     }
   }
 
-  // 按发布时间倒序
-  allArticles.sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  );
+  // 排序：先按媒体来源优先级（NEWS_SOURCES 配置顺序），再按发布时间倒序
+  const sourcePriority = new Map<string, number>();
+  NEWS_SOURCES.forEach((s, i) => sourcePriority.set(s.id, i));
+
+  allArticles.sort((a, b) => {
+    const pa = sourcePriority.has(a.sourceId) ? sourcePriority.get(a.sourceId)! : 999;
+    const pb = sourcePriority.has(b.sourceId) ? sourcePriority.get(b.sourceId)! : 999;
+    if (pa !== pb) return pa - pb;
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  });
 
   return allArticles;
 }

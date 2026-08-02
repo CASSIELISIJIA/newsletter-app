@@ -60,21 +60,38 @@ export default function NewsletterView({
     return map;
   }, [taggedArticles, taggedSections]);
 
-  const handleCopy = () => {
-    let text = '<span style="font-family:Arial;font-size:12px"><strong>全球政经要闻 Newsletter</strong></span>\n\n';
+  const handleCopy = async () => {
+    // 构建纯文本版本（粘贴到记事本等纯文本编辑器）
+    let plainText = "全球政经要闻 Newsletter\n\n";
+    // 构建 HTML 版本（粘贴到 Word/Outlook/Gmail 时带 Arial 12px 样式，标题加粗 14px）
+    let html = '<div style="font-family:Arial;font-size:12px"><strong style="font-size:12px">全球政经要闻 Newsletter</strong><br/><br/>';
     for (const section of NEWSLETTER_SECTIONS) {
       const items = grouped[section.id];
       if (!items || items.length === 0) continue;
-      text += `<span style="font-family:Arial;font-size:14px;font-weight:bold">${section.label}</span>\n`;
+      plainText += `${section.label}\n`;
+      html += `<strong style="font-size:14px">${section.label}</strong><br/>`;
       for (const item of items) {
-        text += `• ${item.title}\n  ${item.url}\n`;
+        plainText += `• ${item.title}\n  ${item.url}\n`;
+        html += `• ${item.title}<br/>&nbsp;&nbsp;${item.url}<br/>`;
       }
-      text += "\n";
+      plainText += "\n";
+      html += "<br/>";
     }
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    html += "</div>";
+
+    const clipboardItem = new ClipboardItem({
+      "text/plain": new Blob([plainText], { type: "text/plain" }),
+      "text/html": new Blob([html], { type: "text/html" }),
     });
+
+    try {
+      await navigator.clipboard.write([clipboardItem]);
+    } catch {
+      // 降级：部分浏览器不支持 ClipboardItem，回退到纯文本
+      await navigator.clipboard.writeText(plainText);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (taggedArticles.length === 0) {
@@ -125,7 +142,7 @@ export default function NewsletterView({
           if (!items || items.length === 0) return null;
           return (
             <div key={section.id}>
-              <h2 className="mb-3 border-b border-neutral-200 pb-2 text-base font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
+              <h2 className="mb-3 border-b border-neutral-200 pb-2 text-sm font-bold text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
                 {section.label}
               </h2>
               <div className="space-y-1">

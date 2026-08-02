@@ -28,6 +28,13 @@ export interface TrackedEntity {
   highlight?: boolean;
 }
 
+export interface CountryTopic {
+  id: string;
+  name: string;
+  nameEn: string;
+  keywords: string[];
+}
+
 export interface RssFeedConfig {
   id: string;
   name: string;
@@ -48,4 +55,5 @@ export interface NewsArticle {
   summary: string;
   region: string;
   entityIds: string[];
+  countryIds: string[];
 }

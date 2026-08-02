@@ -16,13 +16,35 @@ function sortArticles(articles: NewsArticle[]): NewsArticle[] {
   );
 }
 
+// 开发环境：把 mock 数据的时间戳重映射到最近 72 小时内，
+// 避免时间过滤把所有样例数据都过滤掉
+function remapMockTimestamps(articles: NewsArticle[]): NewsArticle[] {
+  if (articles.length === 0) return articles;
+  const now = Date.now();
+  // 按原始时间排序，最早到最新
+  const sorted = [...articles].sort(
+    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
+  );
+  const oldest = new Date(sorted[0].publishedAt).getTime();
+  const newest = new Date(sorted[sorted.length - 1].publishedAt).getTime();
+  const originalSpan = Math.max(newest - oldest, 1);
+  // 映射到最近 60 小时内（留余量，保证在 72h 筛选范围内）
+  const targetSpan = 60 * 3600 * 1000;
+  return articles.map((a) => {
+    const originalTime = new Date(a.publishedAt).getTime();
+    const ratio = (originalTime - oldest) / originalSpan;
+    const newTime = now - Math.round((1 - ratio) * targetSpan);
+    return { ...a, publishedAt: new Date(newTime).toISOString() };
+  });
+}
+
 export async function getNews(): Promise<{
   articles: NewsArticle[];
   source: "rss" | "mock";
 }> {
   // 开发环境直接返回 Mock 数据，避免等待 RSS 超时
   if (process.env.NODE_ENV === "development") {
-    return { articles: sortArticles(MOCK_ARTICLES), source: "mock" };
+    return { articles: sortArticles(remapMockTimestamps(MOCK_ARTICLES)), source: "mock" };
   }
 
   // 生产环境尝试 RSS

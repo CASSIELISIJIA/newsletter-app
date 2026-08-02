@@ -1,5 +1,5 @@
 import type { NewsArticle } from "./types";
-import { NEWS_SOURCES } from "./preferences";
+import { NEWS_SOURCES, COUNTRY_TOPICS } from "./preferences";
 
 // ============================================================
 //  示例新闻数据 (Mock Data)
@@ -9,7 +9,7 @@ import { NEWS_SOURCES } from "./preferences";
 //  后续接入真实新闻 API / Google 搜索时，替换 getNews() 实现即可。
 // ============================================================
 
-type MockArticle = Omit<NewsArticle, "sourceName">;
+type MockArticle = Omit<NewsArticle, "sourceName" | "countryIds">;
 
 const RAW_MOCK_ARTICLES: MockArticle[] = [
   // ========== AIIB 专题 ==========
@@ -445,9 +445,25 @@ const RAW_MOCK_ARTICLES: MockArticle[] = [
   },
 ];
 
-// 为 Mock 数据补充 sourceName 字段
+// 为 Mock 数据补充 sourceName 字段，并自动检测关联的国家专题
 const sourceNameMap = new Map(NEWS_SOURCES.map((s) => [s.id, s.name]));
+
+function detectMockCountries(title: string, summary: string): string[] {
+  const text = `${title} ${summary}`.toLowerCase();
+  const ids: string[] = [];
+  for (const c of COUNTRY_TOPICS) {
+    for (const kw of c.keywords) {
+      if (text.includes(kw.toLowerCase())) {
+        ids.push(c.id);
+        break;
+      }
+    }
+  }
+  return ids;
+}
+
 export const MOCK_ARTICLES: NewsArticle[] = RAW_MOCK_ARTICLES.map((a) => ({
   ...a,
   sourceName: sourceNameMap.get(a.sourceId) ?? a.sourceId,
+  countryIds: detectMockCountries(a.title, a.summary),
 }));
