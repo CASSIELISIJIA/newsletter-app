@@ -71,8 +71,8 @@ export default function NewsletterView({
       plainText += `${section.label}\n`;
       html += `<strong style="font-size:14px">${section.label}</strong><br/>`;
       for (const item of items) {
-        plainText += `• ${item.title}\n  ${item.url}\n`;
-        html += `• ${item.title}<br/>&nbsp;&nbsp;${item.url}<br/>`;
+        plainText += `• ${item.title}\n  来源：${item.sourceName}\n  ${item.url}\n`;
+        html += `• ${item.title}<br/>&nbsp;&nbsp;<span style="color:#666">来源：${escapeHtml(item.sourceName)}</span><br/>&nbsp;&nbsp;${item.url}<br/>`;
       }
       plainText += "\n";
       html += "<br/>";
@@ -158,14 +158,19 @@ export default function NewsletterView({
                       >
                         {article.title}
                       </a>
-                      <a
-                        href={article.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-0.5 block break-all text-xs text-neutral-400 hover:underline dark:text-neutral-500"
-                      >
-                        {article.url}
-                      </a>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                          来源：{article.sourceName}
+                        </span>
+                        <a
+                          href={article.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="break-all text-xs text-neutral-400 hover:underline dark:text-neutral-500"
+                        >
+                          {article.url}
+                        </a>
+                      </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 md:opacity-0 md:transition md:group-hover:opacity-100">
                       <select
@@ -195,4 +200,14 @@ export default function NewsletterView({
       </div>
     </div>
   );
+}
+
+// 将 sourceName 等用户可见文本安全地嵌入剪贴板 HTML（防止 & < > 破坏 HTML 结构）
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
