@@ -2,8 +2,9 @@ import NewsletterClient from "@/app/components/NewsletterClient";
 import { getNews } from "@/app/lib/news";
 import { NEWS_CATEGORIES, NEWS_SOURCES, TRACKED_ENTITIES } from "@/app/lib/preferences";
 
-// 每 30 分钟重新抓取 RSS（ISR 缓存）
-export const revalidate = 1800;
+// 每 5 分钟重新抓取 RSS（ISR 缓存 + stale-while-revalidate）
+// 用户访问先拿到缓存内容，后台同时触发重新生成，不会等待
+export const revalidate = 300;
 
 export default async function Home() {
   const { articles, source } = await getNews();
