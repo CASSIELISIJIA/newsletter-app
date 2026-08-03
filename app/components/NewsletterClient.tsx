@@ -150,6 +150,17 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
     setSearchQuery("");
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetch("/api/refresh", { method: "POST" });
+      window.location.reload();
+    } catch {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-8 md:py-8 lg:max-w-screen-xl">
       {/* 顶部：搜索 + 视图切换 */}
@@ -186,6 +197,18 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
             Newsletter
           </button>
         </div>
+        {/* 手动刷新按钮：强制 ISR 缓存失效，重新抓取 RSS */}
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-500 transition hover:text-neutral-900 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-100"
+          title="刷新新闻"
+        >
+          <svg className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span className="hidden sm:inline">{refreshing ? "刷新中" : "刷新"}</span>
+        </button>
       </div>
 
       {view === "newsletter" ? (
