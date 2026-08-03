@@ -79,6 +79,9 @@ const SOURCE_ALIASES: Record<string, string> = {
   caixin: "caixin", "caixin global": "caixin",
   dohanews: "dohanews", "doha news": "dohanews",
   qna: "qna", "qatar news agency": "qna", "qna.org.qa": "qna",
+  economictimes: "economictimes", "economic times": "economictimes", "the economic times": "economictimes", "economictimes.com": "economictimes",
+  antaranews: "antaranews", "antara news": "antaranews", "antaranews.com": "antaranews", "antara": "antaranews",
+  devdiscourse: "devdiscourse", "devdiscourse.com": "devdiscourse",
 };
 
 function matchSourceId(sourceName: string): string {

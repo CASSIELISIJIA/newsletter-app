@@ -39,4 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-ssh-tmp
+
+# ssh temp keys (must never be committed)
+.ssh-tmp/

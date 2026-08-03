@@ -36,6 +36,9 @@ export const NEWS_SOURCES: NewsSource[] = [
   { id: "caixin", name: "Caixin Global", country: "CN", homepage: "https://www.caixinglobal.com" },
   { id: "dohanews", name: "Doha News", country: "QA", homepage: "https://dohanews.co" },
   { id: "qna", name: "Qatar News Agency", country: "QA", homepage: "https://qna.org.qa" },
+  { id: "economictimes", name: "The Economic Times", country: "IN", homepage: "https://economictimes.com" },
+  { id: "antaranews", name: "Antara News", country: "ID", homepage: "https://antaranews.com" },
+  { id: "devdiscourse", name: "Devdiscourse", country: "IN", homepage: "https://devdiscourse.com" },
 ];
 
 // ==================== 2. 五大编辑方向 ====================
@@ -231,6 +234,18 @@ export const COUNTRY_TOPICS: CountryTopic[] = [
     name: "英国",
     nameEn: "United Kingdom",
     keywords: ["UK ", "U.K.", "Britain", "British", "London", "Bank of England", "BoE", "Treasury"],
+  },
+  {
+    id: "thailand",
+    name: "泰国",
+    nameEn: "Thailand",
+    keywords: ["Thailand", "Thai", "Bangkok", "Bank of Thailand"],
+  },
+  {
+    id: "bangladesh",
+    name: "孟加拉国",
+    nameEn: "Bangladesh",
+    keywords: ["Bangladesh", "Bangladeshi", "Dhaka", "Bangladesh Bank"],
   },
 ];
 
@@ -523,6 +538,24 @@ export const RSS_FEEDS: RssFeedConfig[] = [
     type: "google-news",
     defaultCategory: "global-affairs",
     description: "英国经济、BoE、财政、政策",
+  },
+  // ---- 国家专题：泰国 ----
+  {
+    id: "feed-thailand",
+    name: "泰国政经",
+    url: "https://news.google.com/rss/search?q=Thailand%20economy%20OR%20Bank%20of%20Thailand%20OR%20Thailand%20policy%20OR%20Bangkok&hl=en-US&gl=TH&ceid=TH:en",
+    type: "google-news",
+    defaultCategory: "asia-pacific",
+    description: "泰国经济、央行、政策",
+  },
+  // ---- 国家专题：孟加拉国 ----
+  {
+    id: "feed-bangladesh",
+    name: "孟加拉国政经",
+    url: "https://news.google.com/rss/search?q=Bangladesh%20economy%20OR%20Bangladesh%20Bank%20OR%20Bangladesh%20policy%20OR%20Dhaka&hl=en-US&gl=BD&ceid=BD:en",
+    type: "google-news",
+    defaultCategory: "asia-pacific",
+    description: "孟加拉国经济、央行、政策",
   },
 ];
 
