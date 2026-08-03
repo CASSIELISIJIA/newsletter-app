@@ -227,11 +227,9 @@ export default function NewsletterClient({ articles, now }: NewsletterClientProp
 
           {/* 板块 toggle chips（AIIB + 4 大板块，同级平铺） */}
           <SectionChip active={activeSection === "all"} onClick={() => setActiveSection("all")}>全部</SectionChip>
-          {aiibCount > 0 && (
-            <SectionChip active={activeSection === "aiib"} onClick={() => setActiveSection("aiib")} variant="aiib">
-              AIIB
-            </SectionChip>
-          )}
+          <SectionChip active={activeSection === "aiib"} onClick={() => setActiveSection("aiib")} variant="aiib">
+            AIIB{aiibCount > 0 && <span className="ml-1 opacity-60">{aiibCount}</span>}
+          </SectionChip>
           <SectionChip active={activeSection === "macro"} onClick={() => setActiveSection("macro")}>宏观&政治</SectionChip>
           <SectionChip active={activeSection === "asia"} onClick={() => setActiveSection("asia")}>亚太新闻</SectionChip>
           <SectionChip active={activeSection === "finance"} onClick={() => setActiveSection("finance")}>财经&经济</SectionChip>
