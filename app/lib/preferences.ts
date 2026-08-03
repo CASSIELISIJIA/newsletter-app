@@ -338,10 +338,11 @@ export const RSS_FEEDS: RssFeedConfig[] = [
   {
     id: "feed-aiib",
     name: "AIIB 专题",
-    url: "https://news.google.com/rss/search?q=AIIB%20OR%20%22Asian%20Infrastructure%20Investment%20Bank%22&hl=en-US&gl=US&ceid=US:en",
+    // 多语言 AIIB 搜索：18 种语言变体（去掉 language:"zh-hans" 和 "亚洲基础设施投资银行"）
+    url: "https://news.google.com/rss/search?q=%22Asian%20Infrastructure%20Investment%20Bank%22%20OR%20%22AIIB%22%20OR%20%22%E4%BA%9E%E6%B4%B2%E5%9F%BA%E7%A4%8E%E5%BB%BA%E8%A8%AD%E6%8A%95%E8%B3%87%E9%8A%80%E8%A1%8C%22%20OR%20%22%EC%95%84%EC%8B%9C%EC%95%84%EC%9D%B8%ED%94%84%EB%9D%BC%ED%88%AC%EC%9E%90%EC%9D%80%ED%96%89%22%20OR%20%22%E4%BA%9A%E6%8A%95%E8%A1%8C%22%20OR%20%22%E4%BA%9E%E6%8A%95%E8%A1%8C%22%20OR%20%22Bank%20Investasi%20Infrastruktur%20Asia%22%20OR%20%22%E3%82%A2%E3%82%B8%E3%82%A2%E3%82%A4%E3%83%B3%E3%83%95%E3%83%A9%E6%8A%95%E8%B3%87%E9%8A%80%E8%A1%8C%22%20OR%20%22Ng%C3%A2n%20h%C3%A0ng%20%C4%90%E1%BA%A7u%20t%C6%B0%20C%C6%A1%20s%E1%BB%9F%20H%E1%BA%A1%20t%E1%BA%A7ng%20Ch%C3%A2u%20%C3%81%22%20OR%20%22%E1%9E%92%E1%9E%93%E1%9E%B6%E1%9E%82%E1%9E%B6%E1%9E%9A%E1%9E%9C%E1%9E%B7%E1%9E%93%E1%9E%B7%E1%9E%99%E1%9F%84%E1%9E%82%E1%9E%A0%E1%9F%81%E1%9E%8A%E1%9F%92%E1%9E%8B%E1%9E%B6%E1%9E%9A%E1%9E%85%E1%9E%93%E1%9E%B6%E1%9E%9F%E1%9E%98%E1%9F%92%E1%9E%96%E1%9F%90%E1%9E%93%E1%9F%92%E1%9E%92%E1%9E%A2%E1%9E%B6%E1%9E%9F%E1%9F%8A%E1%9E%B8%22%20OR%20%22Banco%20Asi%C3%A1tico%20de%20Investimento%20em%20Infraestrutura%22%20OR%20%22Asya%20Altyap%C4%B1%20Yat%C4%B1r%C4%B1m%20Bankas%C4%B1%22%20OR%20%22El%20Asian%20Infracstructure%20Investment%20Bank%22%20OR%20%22Asiatische%20Infrastruktur-Investitionsbank%22%20OR%20%22La%20Banque%20asiatique%20d%27investissement%20dans%20les%20infrastructures%22%20OR%20%22La%20Banque%20asiatique%20d%27investissement%20pour%20les%20infrastructures%22%20OR%20%22Banco%20Asi%C3%A1tico%20para%20Inversi%C3%B3n%20en%20Infraestructuras%22%20OR%20%22Banco%20Asi%C3%A1tico%20de%20Inversi%C3%B3n%20en%20Infraestructura%22&hl=en-US&gl=US&ceid=US:en",
     type: "google-news",
     defaultCategory: "multilateral",
-    description: "追踪 AIIB 相关报道（标题提及或正文多次提及）",
+    description: "多语言全网搜索 AIIB，仅收录标题提及的文章",
   },
   // ---- 全球政经要事 ----
   {

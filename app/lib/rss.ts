@@ -242,13 +242,15 @@ function parseRssItem(
   const publishedAt = item.isoDate || item.pubDate || new Date().toISOString();
 
   // 检测机构
-  const { entityIds, aiibMentionCount } = detectEntities(cleanTitle, content);
+  const { entityIds } = detectEntities(cleanTitle, content);
 
-  // AIIB feed 的过滤规则：标题提及 或 正文 2 次以上
+  // AIIB feed 的过滤规则：仅收录标题提及 AIIB 的文章
+  // （detectEntities 合并扫描标题+正文，需要单独检测标题）
   if (feed.id === "feed-aiib") {
-    const titleMentionsAiib = entityIds.includes("aiib");
-    const bodyMentionsAiib = aiibMentionCount >= 2;
-    if (!titleMentionsAiib && !bodyMentionsAiib) return null;
+    const titleLower = cleanTitle.toLowerCase();
+    const aiibKeywords = TRACKED_ENTITIES.find((e) => e.id === "aiib")?.keywords ?? [];
+    const titleMentionsAiib = aiibKeywords.some((kw) => titleLower.includes(kw.toLowerCase()));
+    if (!titleMentionsAiib) return null;
   }
 
   // 分类
